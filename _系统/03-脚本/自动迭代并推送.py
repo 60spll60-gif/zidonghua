@@ -4,12 +4,17 @@
 
 import subprocess
 import sys
+import os
 from datetime import datetime
 from pathlib import Path
 
 
 VAULT_ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = VAULT_ROOT / "_系统" / "03-脚本"
+GIT_USER_NAME = os.environ.get("GIT_USER_NAME", "60spll60-gif")
+GIT_USER_EMAIL = os.environ.get(
+    "GIT_USER_EMAIL", "60spll60-gif@users.noreply.github.com"
+)
 
 
 def run(command: list[str]) -> None:
@@ -23,6 +28,7 @@ def main() -> None:
         run([sys.executable, str(SCRIPTS / script)])
 
     run([sys.executable, str(VAULT_ROOT / "scripts" / "验证部署包.py")])
+    run([sys.executable, str(VAULT_ROOT / "scripts" / "检查敏感信息.py")])
     run(["git", "add", "-A"])
 
     diff = subprocess.run(
@@ -35,7 +41,18 @@ def main() -> None:
         return
 
     date = datetime.now().strftime("%Y-%m-%d")
-    run(["git", "commit", "-m", f"chore: 自动迭代知识库 {date}"])
+    run(
+        [
+            "git",
+            "-c",
+            f"user.name={GIT_USER_NAME}",
+            "-c",
+            f"user.email={GIT_USER_EMAIL}",
+            "commit",
+            "-m",
+            f"chore: 自动迭代知识库 {date}",
+        ]
+    )
     run(["git", "push", "origin", "main"])
     print("✅ 已推送到 GitHub，GitHub Actions 将继续部署网站。")
 
