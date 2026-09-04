@@ -1,0 +1,5 @@
+# .dockerignore - 告诉 Docker 哪些文件不要打进镜像（让镜像更小更干净）
+__pycache__
+*.pyc
+.git
+README.md

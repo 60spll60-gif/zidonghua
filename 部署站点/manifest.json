@@ -1,0 +1,46 @@
+{
+  "name": "知识库 · 学习打卡",
+  "short_name": "知识库",
+  "id": "/",
+  "description": "个人知识管理系统，支持笔记浏览与每日学习打卡",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#6b4fa0",
+  "background_color": "#f8f9fc",
+  "lang": "zh-CN",
+  "scope": "/",
+  "url": "https://formosus.me",
+  "icons": [
+    {
+      "src": "icons/favicon-48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/favicon-64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/favicon-128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/favicon-256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

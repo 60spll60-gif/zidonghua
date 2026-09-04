@@ -1,0 +1,98 @@
+name: 知识库自动迭代并部署
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 北京时间每周五 18:00（UTC 10:00）执行一次
+    - cron: "0 10 * * 5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Shanghai
+      CLOUDFLARE_DEPLOY_MODE: ${{ vars.CLOUDFLARE_DEPLOY_MODE || 'workers' }}
+      CLOUDFLARE_PROJECT_NAME: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
+      CLOUDFLARE_WORKER_NAME: ${{ vars.CLOUDFLARE_WORKER_NAME }}
+      SITE_URL: ${{ vars.SITE_URL || 'https://formosus.me' }}
+
+    steps:
+      - name: 拉取知识库
+        uses: actions/checkout@v4
+
+      - name: 准备 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 执行知识库迭代任务
+        run: |
+          python _系统/03-脚本/知识汇出.py
+          python _系统/03-脚本/周回顾.py
+          python _系统/03-脚本/vault统计.py
+          python _系统/03-脚本/重建dashboard.py
+
+      - name: 校验部署包
+        run: python scripts/验证部署包.py
+
+      - name: 准备 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: 检查 Cloudflare 配置
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "❌ 未配置 CLOUDFLARE_API_TOKEN，请在 GitHub Secrets 中添加。"
+            exit 1
+          fi
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "❌ 未配置 CLOUDFLARE_ACCOUNT_ID，请在 GitHub Secrets 中添加。"
+            exit 1
+          fi
+
+      - name: 部署到 Cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          if [ "$CLOUDFLARE_DEPLOY_MODE" = "pages" ]; then
+            if [ -z "$CLOUDFLARE_PROJECT_NAME" ]; then
+              echo "❌ 未配置仓库变量 CLOUDFLARE_PROJECT_NAME。"
+              exit 1
+            fi
+            npx --yes wrangler@latest pages deploy 部署站点 --project-name "$CLOUDFLARE_PROJECT_NAME"
+          else
+            if [ -z "$CLOUDFLARE_WORKER_NAME" ]; then
+              echo "❌ 未配置仓库变量 CLOUDFLARE_WORKER_NAME。"
+              exit 1
+            fi
+            cat > .wrangler.deploy.toml <<EOF
+          name = "$CLOUDFLARE_WORKER_NAME"
+          compatibility_date = "2026-09-05"
+
+          [assets]
+          directory = "./部署站点"
+          EOF
+            npx --yes wrangler@latest deploy --config .wrangler.deploy.toml
+            rm -f .wrangler.deploy.toml
+          fi
+
+      - name: 线上冒烟验证
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error "$SITE_URL/index.html?deploy=$GITHUB_SHA" -o /tmp/index.html
+          curl --fail --silent --show-error "$SITE_URL/checkin.html?deploy=$GITHUB_SHA" -o /tmp/checkin.html
+          grep -q 'data-filter="linux"' /tmp/index.html
+          grep -q 'Linux文件系统与权限' /tmp/index.html
+          grep -q 'value="linux"' /tmp/checkin.html
+          echo "✅ 线上 Linux 内容验证通过。"

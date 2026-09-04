@@ -1,0 +1,6 @@
+# Ansible 实操 - 第一个 inventory
+# 格式: <主机>  ansible_connection=local
+# 因为我们就在本机实操，用 local 连接即可管理自己这台 Windows 机器
+
+[local]
+localhost ansible_connection=local

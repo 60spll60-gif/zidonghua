@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录 · 自生长知识库</title>
+<!-- PWA Meta -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="知识库">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#6b4fa0">
+<meta name="description" content="个人知识管理系统 · 笔记浏览 · 每日学习打卡 · 马卡龙设计系统">
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+<!-- Icons -->
+<link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Noto+Serif+SC:wght@600;700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  /* ===== 马卡龙六色设计系统（源自 html-beautifier）===== */
+  :root {
+    --rose-500:#e8889a;  --rose-100:#fdf0f3;
+    --mint-500:#6bc4a6;  --mint-100:#edf9f4;  --mint-deep:#3d8e72;
+    --lavender-500:#a78bda; --lavender-100:#f3eefb; --lavender-deep:#6b4fa0;
+    --butter-500:#e4c56a; --butter-100:#fdf8e8;
+    --sky-500:#7ab4d9;   --sky-100:#edf5fb;   --sky-deep:#3a7aaa;
+    --peach-500:#e8a87c; --peach-100:#fdf3ec;
+    --ink-900:#1a1a2e; --ink-600:#4a4862; --ink-500:#6b6880; --ink-400:#908da3; --ink-200:#d8d6e3; --ink-100:#eceaf3;
+    --base-50:#fafbfc;
+    --card-border:#e8e6ef;
+    --card-shadow:0 1px 3px rgba(100,80,140,.05), 0 8px 28px rgba(100,80,140,.08);
+    --radius:16px; --radius-sm:10px;
+  }
+  *,*::before,*::after{ margin:0; padding:0; box-sizing:border-box; }
+  body{
+    font-family:'Noto Sans SC','DM Sans',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+    background:var(--base-50); color:var(--ink-900); line-height:1.7;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+    background-image:radial-gradient(circle at 15% 20%, var(--lavender-100) 0, transparent 34%),
+                     radial-gradient(circle at 85% 80%, var(--sky-100) 0, transparent 36%),
+                     radial-gradient(circle at 80% 15%, var(--mint-100) 0, transparent 30%);
+  }
+  .auth-wrap{ display:grid; grid-template-columns:440px 420px; width:860px; max-width:100%; background:#fff;
+    border-radius:22px; overflow:hidden; border:1px solid var(--card-border); box-shadow:var(--card-shadow); }
+
+  /* ===== 左侧品牌区 ===== */
+  .brand{ position:relative; padding:48px 42px; color:#fff; overflow:hidden;
+    background:linear-gradient(150deg,#4b3f72 0%, #6b4fa0 42%, #3a7aaa 100%); display:flex; flex-direction:column; }
+  .brand::after{ content:''; position:absolute; inset:0;
+    background-image:radial-gradient(rgba(255,255,255,.14) 1px, transparent 1px); background-size:22px 22px; pointer-events:none; }
+  .brand-logo{ display:flex; align-items:center; gap:12px; position:relative; z-index:1; }
+  .brand-logo .icon-box{ width:44px; height:44px; border-radius:12px; background:rgba(255,255,255,.16);
+    display:flex; align-items:center; justify-content:center; font-size:20px; }
+  .brand-logo b{ font-family:'Noto Serif SC',serif; font-size:19px; letter-spacing:.02em; }
+  .brand-logo small{ display:block; font-size:11px; opacity:.75; font-weight:400; }
+  .brand h1{ position:relative; z-index:1; font-family:'Noto Serif SC',serif; font-size:32px; font-weight:900; line-height:1.4; margin:44px 0 14px; }
+  .brand h1 .gt{ background:linear-gradient(90deg,#e4c56a,#e8a87c); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .brand p{ position:relative; z-index:1; font-size:13.5px; opacity:.85; max-width:300px; }
+  .brand-feats{ position:relative; z-index:1; margin-top:auto; padding-top:36px; display:flex; flex-direction:column; gap:12px; }
+  .brand-feats div{ display:flex; align-items:center; gap:10px; font-size:13px; opacity:.94; }
+  .brand-feats i{ width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; }
+
+  /* ===== 右侧登录区 ===== */
+  .panel{ padding:44px 42px; display:flex; flex-direction:column; }
+  .panel h2{ font-family:'Noto Serif SC',serif; font-size:22px; font-weight:700; }
+  .panel .sub{ font-size:12.5px; color:var(--ink-500); margin:4px 0 22px; }
+
+  /* Tabs */
+  .tabs{ display:flex; background:var(--ink-100); border-radius:12px; padding:4px; margin-bottom:26px; }
+  .tab{ flex:1; text-align:center; padding:9px 0; font-size:13.5px; font-weight:600; color:var(--ink-500);
+    border-radius:9px; cursor:pointer; border:none; background:transparent; font-family:inherit; }
+  .tab.active{ background:#fff; color:var(--ink-900); box-shadow:0 2px 8px rgba(100,80,140,.12); }
+  .tab i{ margin-right:6px; }
+
+  /* 表单 */
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:12px; font-weight:600; color:var(--ink-600); margin-bottom:6px; }
+  .input-row{ display:flex; gap:10px; }
+  .field input{
+    width:100%; padding:12px 14px; border:1.5px solid var(--ink-100); border-radius:var(--radius-sm);
+    font-size:14px; font-family:inherit; outline:none; background:#fff; color:var(--ink-900);
+  }
+  .field input:focus{ border-color:var(--lavender-500); background:var(--lavender-50,#f9f6fd); }
+  .input-prefix{ display:flex; align-items:center; padding:0 12px; border:1.5px solid var(--ink-100); border-right:none;
+    border-radius:var(--radius-sm) 0 0 var(--radius-sm); font-size:14px; color:var(--ink-500); background:var(--base-50); font-weight:600; }
+  .input-row .input-prefix + input{ border-radius:0 var(--radius-sm) var(--radius-sm) 0; }
+  .btn-code{ flex-shrink:0; padding:0 14px; border:1.5px solid var(--lavender-500); background:var(--lavender-100);
+    color:var(--lavender-deep); font-size:12.5px; font-weight:600; border-radius:var(--radius-sm); cursor:pointer; font-family:inherit; white-space:nowrap; }
+  .btn-code:disabled{ border-color:var(--ink-200); background:var(--ink-100); color:var(--ink-400); cursor:not-allowed; }
+
+  .btn-primary{
+    width:100%; padding:13px; margin-top:8px; border:none; border-radius:var(--radius-sm);
+    background:linear-gradient(90deg,var(--lavender-500),var(--sky-500)); color:#fff;
+    font-size:14.5px; font-weight:700; cursor:pointer; font-family:inherit; letter-spacing:.06em;
+  }
+  .btn-primary:disabled{ opacity:.55; cursor:not-allowed; }
+
+  .agree{ display:flex; align-items:flex-start; gap:7px; font-size:11.5px; color:var(--ink-400); margin-top:16px; }
+  .agree input{ margin-top:3px; accent-color:var(--lavender-500); }
+  .agree a{ color:var(--sky-deep); text-decoration:none; }
+
+  /* 微信二维码 */
+  .wechat-box{ text-align:center; padding:6px 0 2px; }
+  .qr-frame{ width:196px; height:196px; margin:6px auto 14px; border:1.5px solid var(--card-border); border-radius:14px;
+    padding:12px; position:relative; background:#fff; }
+  .qr-grid{ width:100%; height:100%; display:grid; grid-template-columns:repeat(12,1fr); grid-template-rows:repeat(12,1fr); gap:1.5px; }
+  .qr-grid i{ border-radius:1.5px; }
+  .qr-corner{ position:absolute; width:34px; height:34px; border:4px solid var(--ink-900); border-radius:6px; background:#fff; }
+  .qr-corner::after{ content:''; position:absolute; inset:7px; background:var(--ink-900); border-radius:2px; }
+  .qr-corner.tl{ top:22px; left:22px; } .qr-corner.tr{ top:22px; right:22px; } .qr-corner.bl{ bottom:22px; left:22px; }
+  .qr-logo{ position:absolute; inset:0; margin:auto; width:38px; height:38px; border-radius:9px; background:#07c160;
+    display:flex; align-items:center; justify-content:center; color:#fff; font-size:19px; border:3px solid #fff; }
+  .wechat-tip{ font-size:12.5px; color:var(--ink-500); }
+  .wechat-tip i{ color:#07c160; margin-right:5px; }
+  .qr-scanned{ position:absolute; inset:0; background:rgba(255,255,255,.94); border-radius:14px;
+    display:none; flex-direction:column; align-items:center; justify-content:center; gap:10px; }
+  .qr-scanned.show{ display:flex; }
+  .qr-scanned .ok{ width:52px; height:52px; border-radius:50%; background:var(--mint-100); color:var(--mint-deep);
+    display:flex; align-items:center; justify-content:center; font-size:24px; }
+  .qr-scanned b{ font-size:14px; }
+  .qr-scanned span{ font-size:12px; color:var(--ink-500); }
+  .btn-ghost{ margin-top:14px; background:none; border:none; color:var(--sky-deep); font-size:12px; cursor:pointer; font-family:inherit; }
+
+  /* Toast */
+  .toast{ position:fixed; bottom:32px; left:50%; transform:translateX(-50%) translateY(120px);
+    background:var(--ink-900); color:#fff; padding:12px 22px; border-radius:12px; font-size:13.5px; font-weight:500;
+    box-shadow:0 12px 32px rgba(26,26,46,.28); transition:transform .3s; z-index:99; max-width:88vw; }
+  .toast.show{ transform:translateX(-50%) translateY(0); }
+  .toast .code{ font-family:'DM Sans',monospace; font-weight:700; color:var(--butter-500); letter-spacing:.15em; }
+
+  @media (max-width:860px){
+    .auth-wrap{ grid-template-columns:1fr; width:440px; }
+    .brand{ padding:34px 30px 28px; }
+    .brand h1{ font-size:25px; margin:26px 0 10px; }
+    .brand-feats{ flex-direction:row; flex-wrap:wrap; gap:8px 18px; padding-top:22px; }
+    .panel{ padding:32px 26px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="auth-wrap">
+  <!-- 左侧品牌区 -->
+  <div class="brand">
+    <div class="brand-logo">
+      <div class="icon-box"><i class="fa-solid fa-seedling"></i></div>
+      <div><b>自生长知识库</b><small>Personal Knowledge Garden</small></div>
+    </div>
+    <h1>让每一次学习<br>都长成<span class="gt">参天大树</span></h1>
+    <p>捕获 · 处理 · 链接 · 回顾 —— 登录后同步你的打卡记录与学习数据。</p>
+    <div class="brand-feats">
+      <div><i class="fa-solid fa-calendar-check"></i>每日打卡计划</div>
+      <div><i class="fa-solid fa-chart-line"></i>学习数据看板</div>
+      <div><i class="fa-solid fa-book-open"></i>笔记在线阅读</div>
+      <div><i class="fa-solid fa-fire"></i>连续学习激励</div>
+    </div>
+  </div>
+
+  <!-- 右侧登录区 -->
+  <div class="panel">
+    <h2>欢迎回来</h2>
+    <div class="sub">登录以开启今日学习计划</div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="phone"><i class="fa-solid fa-mobile-screen"></i>手机号登录</button>
+      <button class="tab" data-tab="wechat"><i class="fa-brands fa-weixin"></i>微信登录</button>
+    </div>
+
+    <!-- 手机号登录 -->
+    <div id="pane-phone">
+      <div class="field">
+        <label>手机号码</label>
+        <div class="input-row">
+          <span class="input-prefix">+86</span>
+          <input type="tel" id="phoneInput" placeholder="请输入 11 位手机号" maxlength="11" inputmode="numeric">
+        </div>
+      </div>
+      <div class="field">
+        <label>验证码</label>
+        <div class="input-row">
+          <input type="text" id="codeInput" placeholder="6 位验证码" maxlength="6" inputmode="numeric">
+          <button class="btn-code" id="btnSendCode">获取验证码</button>
+        </div>
+      </div>
+      <button class="btn-primary" id="btnPhoneLogin">登 录</button>
+    </div>
+
+    <!-- 微信登录 -->
+    <div id="pane-wechat" style="display:none">
+      <div class="wechat-box">
+        <div class="qr-frame" id="qrFrame">
+          <div class="qr-grid" id="qrGrid"></div>
+          <div class="qr-corner tl"></div><div class="qr-corner tr"></div><div class="qr-corner bl"></div>
+          <div class="qr-logo"><i class="fa-brands fa-weixin"></i></div>
+          <div class="qr-scanned" id="qrScanned">
+            <div class="ok"><i class="fa-solid fa-check"></i></div>
+            <b>扫码成功</b>
+            <span>请在手机上确认登录</span>
+            <button class="btn-ghost" id="btnWechatConfirm">模拟：手机确认登录 →</button>
+          </div>
+        </div>
+        <div class="wechat-tip"><i class="fa-brands fa-weixin"></i>打开微信「扫一扫」扫描二维码登录</div>
+        <button class="btn-ghost" id="btnRefreshQr">二维码已过期？点击刷新</button>
+      </div>
+    </div>
+
+    <div class="agree">
+      <input type="checkbox" id="agreeCheck" checked>
+      <span>我已阅读并同意 <a href="#">《用户协议》</a> 与 <a href="#">《隐私政策》</a>，登录即视为接受相关条款。</span>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================
+ * 登录模块（前端模拟实现）
+ * 说明：真实上线需后端配合 ——
+ *  · 手机验证码需接入短信服务商（阿里云/腾讯云短信）
+ *  · 微信登录需接入微信开放平台 OAuth2.0
+ * 当前版本在浏览器本地模拟完整流程，数据存 localStorage
+ * ===================================================== */
+const USER_KEY = 'zsk.user';          // 当前登录用户
+const USERS_KEY = 'zsk.users';        // 已注册用户表 {phoneOrWx: {name,avatar,type}}
+
+/* ---------- 工具 ---------- */
+function load(key, fallback){ try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }catch{ return fallback; } }
+function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){ /* 存储不可用时静默降级 */ } }
+function remove(key){ try{ localStorage.removeItem(key); }catch(e){} }
+/* file:// 协议下各页面 localStorage 相互隔离，登录态通过 URL hash 编码接力 */
+function encodeUser(u){ return btoa(encodeURIComponent(JSON.stringify(u))); }
+function decodeUser(s){ try{ return JSON.parse(decodeURIComponent(atob(s))); }catch{ return null; } }
+function withHash(url, u){ return url + '#u=' + encodeUser(u); }
+
+let toastTimer;
+function toast(html){
+  const el = document.getElementById('toast');
+  el.innerHTML = html; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>el.classList.remove('show'), 2600);
+}
+
+/* 退出标记：带 #out=1 进入时清除本页残留登录态，避免「退出后又被自动登回」 */
+if (location.hash.indexOf('out=1') !== -1) {
+  remove(USER_KEY);
+  history.replaceState(null, '', location.pathname + location.search);
+} else if (load(USER_KEY, null)) {
+  /* 已在本页登录过 → 带登录态接力进主页（防止踢回登录页死循环） */
+  location.replace(withHash('index.html', load(USER_KEY, null)));
+}
+
+/* ---------- Tab 切换 ---------- */
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    const target = tab.dataset.tab;
+    document.getElementById('pane-phone').style.display  = target==='phone'  ? 'block':'none';
+    document.getElementById('pane-wechat').style.display = target==='wechat' ? 'block':'none';
+  });
+});
+
+/* ---------- 公共：完成登录 ---------- */
+function finishLogin(account, type){
+  const users = load(USERS_KEY, {});
+  // 老用户读档案，新用户建档
+  const user = users[account] || {
+    name: type==='phone' ? `学习者${account.slice(-4)}` : '微信学习er',
+    avatar: null,
+    type, account
+  };
+  users[account] = user;
+  save(USERS_KEY, users);
+  const session = { ...user, loginAt: Date.now() };
+  save(USER_KEY, session);
+  toast(`登录成功，欢迎回来 · ${user.name}`);
+  // 登录态编码进 hash，接力给目标页
+  setTimeout(()=> location.href = withHash('index.html', session), 700);
+}
+
+function checkAgree(){
+  if (!document.getElementById('agreeCheck').checked){
+    toast('请先勾选并同意《用户协议》与《隐私政策》');
+    return false;
+  }
+  return true;
+}
+
+/* ========== 手机号登录 ========== */
+const phoneInput = document.getElementById('phoneInput');
+const codeInput  = document.getElementById('codeInput');
+const btnSend    = document.getElementById('btnSendCode');
+const btnLogin   = document.getElementById('btnPhoneLogin');
+let sentCode = null, cooldown = 0, cdTimer = null;
+
+const PHONE_RE = /^1[3-9]\d{9}$/;
+
+phoneInput.addEventListener('input', ()=> phoneInput.value = phoneInput.value.replace(/\D/g,''));
+codeInput .addEventListener('input', ()=> codeInput.value  = codeInput.value.replace(/\D/g,''));
+
+btnSend.addEventListener('click', ()=>{
+  const phone = phoneInput.value.trim();
+  if (!PHONE_RE.test(phone)){ toast('手机号格式不正确，请检查后重试'); return; }
+  // 模拟服务端发送验证码（真实环境由短信服务商下发）
+  sentCode = String(Math.floor(100000 + Math.random()*900000));
+  toast(`验证码已发送（模拟）：<span class="code">${sentCode}</span>`);
+  // 60 秒倒计时
+  cooldown = 60;
+  btnSend.disabled = true;
+  btnSend.textContent = `${cooldown}s 后重发`;
+  cdTimer = setInterval(()=>{
+    cooldown--;
+    if (cooldown <= 0){ clearInterval(cdTimer); btnSend.disabled = false; btnSend.textContent = '获取验证码'; }
+    else btnSend.textContent = `${cooldown}s 后重发`;
+  }, 1000);
+});
+
+btnLogin.addEventListener('click', ()=>{
+  const phone = phoneInput.value.trim();
+  const code  = codeInput.value.trim();
+  if (!PHONE_RE.test(phone)) { toast('请先输入正确的手机号'); return; }
+  if (!sentCode)             { toast('请先获取验证码'); return; }
+  if (code.length !== 6)     { toast('请输入 6 位验证码'); return; }
+  if (code !== sentCode)     { toast('验证码错误，请重新输入'); return; }
+  if (!checkAgree())         return;
+  finishLogin(phone, 'phone');
+});
+codeInput.addEventListener('keydown', e=>{ if(e.key==='Enter') btnLogin.click(); });
+
+/* ========== 微信登录 ========== */
+const qrGrid    = document.getElementById('qrGrid');
+const qrScanned = document.getElementById('qrScanned');
+let qrExpireTimer = null, scanTimer = null;
+
+function drawMockQr(){
+  // 生成装饰性模拟二维码图案（非真实可扫）
+  qrGrid.innerHTML = '';
+  for (let i=0; i<144; i++){
+    const cell = document.createElement('i');
+    cell.style.background = Math.random() > .52 ? '#1a1a2e' : 'transparent';
+    qrGrid.appendChild(cell);
+  }
+  qrScanned.classList.remove('show');
+  // 7 秒后自动进入"已扫码"演示态（模拟用户拿手机扫了）
+  clearTimeout(scanTimer);
+  scanTimer = setTimeout(()=> qrScanned.classList.add('show'), 3500);
+  // 2 分钟过期
+  clearTimeout(qrExpireTimer);
+  qrExpireTimer = setTimeout(()=> toast('二维码已过期，请点击刷新'), 120000);
+}
+drawMockQr();
+
+document.getElementById('btnRefreshQr').addEventListener('click', drawMockQr);
+document.getElementById('btnWechatConfirm').addEventListener('click', ()=>{
+  if (!checkAgree()) return;
+  // 模拟微信端确认后返回的临时凭证 → 换取登录态
+  const mockWxId = 'wx_' + Math.random().toString(36).slice(2, 10);
+  finishLogin(mockWxId, 'wechat');
+});
+</script>
+</body>
+</html>

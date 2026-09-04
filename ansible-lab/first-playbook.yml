@@ -1,0 +1,21 @@
+---
+# Ansible 第一个 playbook
+# 作用: 在本机 (localhost) 上收集系统信息并打印一句问候
+# 运行: ansible-playbook -i inventory/hosts first-playbook.yml
+
+- name: 我的第一个 Ansible Play
+  hosts: local
+  gather_facts: true
+
+  tasks:
+    - name: 打印一句问候
+      debug:
+        msg: "你好，Ansible！这是我的第一个 playbook 在本机跑起来了。"
+
+    - name: 显示本机 hostname
+      debug:
+        var: ansible_hostname
+
+    - name: 显示操作系统信息
+      debug:
+        msg: "系统: {{ ansible_system }} {{ ansible_distribution }} {{ ansible_distribution_version }}"
