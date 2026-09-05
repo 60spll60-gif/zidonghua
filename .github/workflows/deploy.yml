@@ -92,13 +92,14 @@ jobs:
               echo "❌ 未配置仓库变量 CLOUDFLARE_WORKER_NAME。"
               exit 1
             fi
-            python - <<'PY'
+          python - <<'PY'
           import os
+          import re
           import sys
 
           name = os.environ["CLOUDFLARE_WORKER_NAME"]
-          if len(name) > 63 or any(char in name for char in ('"', "\\", "\r", "\n")):
-              print("❌ CLOUDFLARE_WORKER_NAME 含有不安全字符或长度超过 63。")
+          if not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,253}[A-Za-z0-9])?", name):
+              print("❌ CLOUDFLARE_WORKER_NAME 必须只包含英文、数字和短横线，长度不超过 255。")
               sys.exit(1)
           PY
             cat > .wrangler.deploy.toml <<EOF
